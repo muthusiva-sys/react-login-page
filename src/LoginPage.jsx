@@ -28,7 +28,9 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
 
     if (match) {
       setStatus({ type: "success", message: "Login successful!" });
-      if (onLoginSuccess) onLoginSuccess(match);
+      window.setTimeout(() => {
+        if (onLoginSuccess) onLoginSuccess(match);
+      }, 1800);
     } else {
       setStatus({ type: "error", message: "Invalid email or password." });
     }
@@ -91,6 +93,7 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={7}
                 required
               />
               <button
@@ -102,6 +105,7 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
                 {showPassword ? "🙈" : "👁"}
               </button>
             </div>
+            <p className="password-hint">Use at least 7 characters.</p>
 
             <div className="form-row">
               <label className="remember-me">

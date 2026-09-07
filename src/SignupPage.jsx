@@ -115,6 +115,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={7}
                 required
               />
               <button
@@ -126,6 +127,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
                 {showPassword ? "🙈" : "👁"}
               </button>
             </div>
+            <p className="password-hint">Use at least 7 characters.</p>
 
             <label className="field-label" htmlFor="confirmPassword">
               Confirm Password
@@ -137,6 +139,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              minLength={7}
               required
             />
 
