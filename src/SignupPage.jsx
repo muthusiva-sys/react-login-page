@@ -69,8 +69,8 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
             {status && (
               <div
                 className={`auth-status auth-status-${status.type}`}
-                role={status.type === "error" ? "alert" : "status"}
-                aria-live="polite"
+                role="status"
+                aria-live={status.type === "error" ? "assertive" : "polite"}
               >
                 {status.message}
               </div>
