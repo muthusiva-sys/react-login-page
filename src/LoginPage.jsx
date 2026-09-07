@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Authpage.css";
 
 const USERS_KEY = "kreative_users";
+const visualAsset = `${import.meta.env.BASE_URL}colorful_3d_cartoon_animated.gif`;
 
 export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +21,6 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
 
     if (match) {
       setStatus({ type: "success", message: "Login successful!" });
-      window.alert("Login successful!");
       if (onLoginSuccess) onLoginSuccess(match);
     } else {
       setStatus({ type: "error", message: "Invalid email or password." });
@@ -33,7 +33,7 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
         {/* Left visual panel */}
         <div className="auth-visual">
           <img
-            src="/colorful_3d_cartoon_animated.gif"
+            src={visualAsset}
             alt="Colorful 3D animated artwork"
             className="auth-visual-img"
           />
@@ -51,7 +51,11 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
             <p className="auth-subtitle">Enter Your Details Below</p>
 
             {status && (
-              <div className={`auth-status auth-status-${status.type}`}>
+              <div
+                className={`auth-status auth-status-${status.type}`}
+                role={status.type === "error" ? "alert" : "status"}
+                aria-live="polite"
+              >
                 {status.message}
               </div>
             )}

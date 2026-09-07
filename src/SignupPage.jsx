@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./Authpage.css";
 
 const USERS_KEY = "kreative_users";
+const visualAsset = `${import.meta.env.BASE_URL}colorful_3d_cartoon_animated.gif`;
 
 export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,6 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
     setStatus({ type: "success", message: "Account created successfully!" });
-    window.alert("Account created successfully!");
     if (onSignupSuccess) onSignupSuccess(newUser);
   };
 
@@ -42,7 +42,7 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
         {/* Left visual panel */}
         <div className="auth-visual">
           <img
-            src="/colorful_3d_cartoon_animated.gif"
+            src={visualAsset}
             alt="Decorative"
             className="auth-visual-img"
           />
@@ -60,7 +60,11 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
             <p className="auth-subtitle">Enter Your Details Below</p>
 
             {status && (
-              <div className={`auth-status auth-status-${status.type}`}>
+              <div
+                className={`auth-status auth-status-${status.type}`}
+                role={status.type === "error" ? "alert" : "status"}
+                aria-live="polite"
+              >
                 {status.message}
               </div>
             )}
