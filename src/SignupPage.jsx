@@ -40,7 +40,9 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
 
     setStatus({ type: "success", message: "Account created successfully!" });
-    if (onSignupSuccess) onSignupSuccess(newUser);
+    window.setTimeout(() => {
+      if (onSignupSuccess) onSignupSuccess(newUser);
+    }, 1800);
   };
 
   return (
