@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Authpage.css";
 
 const USERS_KEY = "kreative_users";
@@ -11,6 +11,13 @@ export default function SignupPage({ onSignupSuccess, onSwitchToLogin }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState(null); // { type: "success" | "error", message: string }
+
+  useEffect(() => {
+    if (!status) return undefined;
+
+    const timeoutId = window.setTimeout(() => setStatus(null), 3500);
+    return () => window.clearTimeout(timeoutId);
+  }, [status]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
