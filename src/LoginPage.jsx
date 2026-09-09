@@ -1,8 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Authpage.css";
 
 const USERS_KEY = "kreative_users";
+const GOOGLE_CLIENT_ID = "608268244023-96cpnskijcol74afi7h38mag62k5nfoj.apps.googleusercontent.com";
 const visualAsset = `${import.meta.env.BASE_URL}colorful_3d_cartoon_animated.gif`;
+
+// Decode the JWT credential Google sends back
+function decodeJwt(token) {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split("")
+      .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+      .join("")
+  );
+  return JSON.parse(jsonPayload);
+}
 
 export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,6 +24,7 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [status, setStatus] = useState(null); // { type: "success" | "error", message: string }
+  const googleButtonRef = useRef(null);
 
   useEffect(() => {
     if (!status) return undefined;
@@ -17,6 +32,68 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
     const timeoutId = window.setTimeout(() => setStatus(null), 3500);
     return () => window.clearTimeout(timeoutId);
   }, [status]);
+
+  // Init Google Identity Services once the script has loaded
+  useEffect(() => {
+    const initGoogle = () => {
+      if (!window.google || !googleButtonRef.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+      });
+
+      // Renders Google's own styled button into the hidden container
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: 320,
+        text: "signin_with",
+      });
+    };
+
+    if (window.google) {
+      initGoogle();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google) {
+          clearInterval(interval);
+          initGoogle();
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  const handleGoogleResponse = (response) => {
+    try {
+      const payload = decodeJwt(response.credential);
+      // payload contains: email, name, picture, sub (google user id), etc.
+
+      const users = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+      let user = users.find((u) => u.email.toLowerCase() === payload.email.toLowerCase());
+
+      if (!user) {
+        user = {
+          email: payload.email,
+          name: payload.name,
+          picture: payload.picture,
+          googleId: payload.sub,
+          provider: "google",
+        };
+        users.push(user);
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }
+
+      setStatus({ type: "success", message: "Login successful!" });
+      window.setTimeout(() => {
+        if (onLoginSuccess) onLoginSuccess(user);
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+      setStatus({ type: "error", message: "Google sign-in failed." });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,7 +116,6 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        {/* Left visual panel */}
         <div className="auth-visual">
           <img
             src={visualAsset}
@@ -48,14 +124,8 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
           />
         </div>
 
-        {/* Right form panel */}
         <div className="auth-form-panel">
           <form className="auth-form" onSubmit={handleSubmit}>
-            {/* <div className="auth-logo">
-              <span className="logo-icon">▶</span>
-              <span className="logo-text"></span>
-            </div> */}
-
             <h1 className="auth-title">Welcome Back!</h1>
             <p className="auth-subtitle">Enter Your Details Below</p>
 
@@ -125,15 +195,8 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
               Log in
             </button>
 
-            <button type="button" className="btn-google">
-              <svg width="18" height="18" viewBox="0 0 48 48">
-                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-                <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.6 35.4 27 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.2 44 24 44z"/>
-                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.6l6.6 5.4C41.5 35.9 44 30.4 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-              </svg>
-              Log in with Google
-            </button>
+            {/* Google renders its own button inside this div */}
+            <div ref={googleButtonRef} className="google-btn-container"></div>
 
             <p className="switch-text">
               Don't have an account?{" "}
