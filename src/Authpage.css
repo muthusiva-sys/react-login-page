@@ -121,7 +121,11 @@
   border-color: #f1b9b9;
   color: #c0392b;
 }
-
+.google-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
 .password-hint {
   margin: -14px 0 18px;
   color: #9aa0a6;
