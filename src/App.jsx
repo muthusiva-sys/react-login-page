@@ -1,36 +1,85 @@
 import React, { useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
+import Dashboard from "./Dashboard";
 
-export default function App() {
-  const [view, setView] = useState("login"); // "login" | "signup"
-  const [user, setUser] = useState(null);
+const SESSION_KEY = "kreative_session";
 
-  if (user) {
-    return (
-      <main className="welcome-page">
-        <section className="welcome-card">
-          <span className="welcome-mark">✓</span>
-          <p className="welcome-eyebrow">KREATIVE SPACE</p>
-          <h1>Welcome, {user.name || user.email.split("@")[0]}.</h1>
-          <p className="welcome-copy">Your account is ready. This is your new inside page.</p>
-          <button type="button" className="btn-login" onClick={() => setUser(null)}>
-            Log out
-          </button>
-        </section>
-      </main>
-    );
+function getSavedUser() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function ProtectedRoute({ user, children }) {
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
-  return view === "login" ? (
-    <LoginPage
-      onSwitchToSignup={() => setView("signup")}
-      onLoginSuccess={setUser}
-    />
-  ) : (
-    <SignupPage
-      onSwitchToLogin={() => setView("login")}
-      onSignupSuccess={() => setView("login")}
-    />
+  return children;
+}
+
+function AppRoutes() {
+  const [user, setUser] = useState(getSavedUser);
+  const navigate = useNavigate();
+
+  const handleLoginSuccess = (loggedInUser) => {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(loggedInUser));
+    setUser(loggedInUser);
+    navigate("/dashboard");
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    setUser(null);
+    navigate("/login");
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route
+        path="/login"
+        element={
+          user ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <LoginPage
+              onSwitchToSignup={() => navigate("/register")}
+              onLoginSuccess={handleLoginSuccess}
+            />
+          )
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <SignupPage
+            onSwitchToLogin={() => navigate("/login")}
+            onSignupSuccess={() => navigate("/login")}
+          />
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute user={user}>
+            <Dashboard user={user} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <AppRoutes />
+    </BrowserRouter>
   );
 }
