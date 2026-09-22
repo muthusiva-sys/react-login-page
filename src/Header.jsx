@@ -17,7 +17,7 @@ export default function Header() {
       <style>{`
         .rw-header {
           position: relative;
-          display: flex;
+          display: none;
           align-items: center;
           justify-content: space-between;
           gap: 24px;
