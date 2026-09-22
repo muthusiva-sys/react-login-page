@@ -25,12 +25,6 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   const [remember, setRemember] = useState(true);
   const [status, setStatus] = useState(null); // { type: "success" | "error", message: string }
   const [loading, setLoading] = useState(false);
-  const [todoText, setTodoText] = useState("");
-  const [loginTodos, setLoginTodos] = useState([
-    { id: 1, text: "Register a new user", done: false },
-    { id: 2, text: "Login with saved details", done: false },
-    { id: 3, text: "Open the dashboard", done: false },
-  ]);
   const googleButtonRef = useRef(null);
 
   useEffect(() => {
@@ -139,40 +133,6 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
     }
   };
 
-  const handleAddTodo = () => {
-    const text = todoText.trim();
-
-    if (!text) return;
-
-    setLoginTodos((currentTodos) => [
-      ...currentTodos,
-      { id: Date.now(), text, done: false },
-    ]);
-    setTodoText("");
-  };
-
-  const handleTodoAction = (event) => {
-    const button = event.target.closest("[data-todo-action]");
-
-    if (!button) return;
-
-    const todoId = Number(button.dataset.todoId);
-    const action = button.dataset.todoAction;
-
-    if (action === "delete") {
-      setLoginTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== todoId));
-      return;
-    }
-
-    if (action === "toggle") {
-      setLoginTodos((currentTodos) =>
-        currentTodos.map((todo) =>
-          todo.id === todoId ? { ...todo, done: !todo.done } : todo
-        )
-      );
-    }
-  };
-
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
@@ -270,61 +230,6 @@ export default function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
                 Sign Up
               </a>
             </p>
-
-            <section className="login-todo-card" aria-labelledby="login-todo-title">
-              <div className="login-todo-header">
-                <h2 id="login-todo-title">Login Todo</h2>
-                <span>{loginTodos.filter((todo) => !todo.done).length} left</span>
-              </div>
-
-              <div className="login-todo-add">
-                <input
-                  type="text"
-                  className="login-todo-input"
-                  placeholder="Add login task"
-                  value={todoText}
-                  onChange={(e) => setTodoText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTodo();
-                    }
-                  }}
-                />
-                <button type="button" className="login-todo-add-btn" onClick={handleAddTodo}>
-                  Add
-                </button>
-              </div>
-
-              {loginTodos.length > 0 ? (
-                <ul className="login-todo-list" onClick={handleTodoAction}>
-                  {loginTodos.map((todo) => (
-                    <li className={`login-todo-item${todo.done ? " is-done" : ""}`} key={todo.id}>
-                      <button
-                        type="button"
-                        className="login-todo-check"
-                        data-todo-action="toggle"
-                        data-todo-id={todo.id}
-                        aria-label={todo.done ? "Mark todo pending" : "Mark todo done"}
-                      >
-                        {todo.done ? "Done" : "Todo"}
-                      </button>
-                      <span>{todo.text}</span>
-                      <button
-                        type="button"
-                        className="login-todo-delete"
-                        data-todo-action="delete"
-                        data-todo-id={todo.id}
-                      >
-                        Delete
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="login-todo-empty">No login tasks now.</p>
-              )}
-            </section>
           </form>
         </div>
       </div>

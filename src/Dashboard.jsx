@@ -3,21 +3,49 @@ import Header from "./Header";
 import "./Authpage.css";
 
 const INITIAL_TASKS = [
-  { id: 1, title: "Practice controlled inputs", owner: "Muthu" },
-  { id: 2, title: "Read localStorage data", owner: "React Auth" },
-  { id: 3, title: "Try event delegation delete", owner: "Dashboard" },
+  { id: 1, title: "Practice controlled inputs", done: false },
+  { id: 2, title: "Read localStorage data", done: false },
+  { id: 3, title: "Try dashboard todo actions", done: true },
 ];
 
 export default function Dashboard({ user, onLogout }) {
   const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [taskText, setTaskText] = useState("");
+
+  const remainingTasks = tasks.filter((task) => !task.done).length;
+
+  const handleAddTask = () => {
+    const title = taskText.trim();
+
+    if (!title) return;
+
+    setTasks((currentTasks) => [
+      ...currentTasks,
+      { id: Date.now(), title, done: false },
+    ]);
+    setTaskText("");
+  };
 
   const handleTaskListClick = (event) => {
-    const deleteButton = event.target.closest("[data-action='delete-task']");
+    const actionButton = event.target.closest("[data-action]");
 
-    if (!deleteButton) return;
+    if (!actionButton) return;
 
-    const taskId = Number(deleteButton.dataset.taskId);
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+    const taskId = Number(actionButton.dataset.taskId);
+    const action = actionButton.dataset.action;
+
+    if (action === "delete-task") {
+      setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+      return;
+    }
+
+    if (action === "toggle-task") {
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task.id === taskId ? { ...task, done: !task.done } : task
+        )
+      );
+    }
   };
 
   return (
@@ -56,18 +84,54 @@ export default function Dashboard({ user, onLogout }) {
             </section>
 
             <section className="dashboard-panel">
-              <h2>Practice Tasks</h2>
+              <div className="todo-panel-header">
+                <div>
+                  <h2>Dashboard Todo List</h2>
+                  <p className="dashboard-copy">
+                    {remainingTasks} pending, {tasks.length - remainingTasks} completed
+                  </p>
+                </div>
+              </div>
+
+              <div className="dashboard-todo-add">
+                <input
+                  type="text"
+                  className="dashboard-todo-input"
+                  placeholder="Add a new todo"
+                  value={taskText}
+                  onChange={(event) => setTaskText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleAddTask();
+                    }
+                  }}
+                />
+                <button type="button" className="dashboard-todo-add-btn" onClick={handleAddTask}>
+                  Add
+                </button>
+              </div>
+
               <p className="dashboard-copy">
-                Delete buttons are handled by one click handler on the list.
+                Todo clicks are handled by one event delegation handler on the list.
               </p>
 
               {tasks.length > 0 ? (
                 <ul className="task-list" onClick={handleTaskListClick}>
                   {tasks.map((task) => (
-                    <li className="task-item" key={task.id}>
-                      <div>
+                    <li className={`task-item${task.done ? " is-done" : ""}`} key={task.id}>
+                      <button
+                        type="button"
+                        className="task-toggle"
+                        data-action="toggle-task"
+                        data-task-id={task.id}
+                        aria-label={task.done ? "Mark todo pending" : "Mark todo complete"}
+                      >
+                        {task.done ? "Done" : "Todo"}
+                      </button>
+                      <div className="task-content">
                         <strong>{task.title}</strong>
-                        <span>{task.owner}</span>
+                        <span>{task.done ? "Completed" : "Pending"}</span>
                       </div>
                       <button
                         type="button"
