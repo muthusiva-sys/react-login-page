@@ -3,6 +3,11 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-route
 import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import Dashboard from "./Dashboard";
+import Overview from "./crm/Overview";
+import Leads from "./crm/Leads";
+import Contacts from "./crm/Contacts";
+import Pipeline from "./crm/Pipeline";
+import Tasks from "./crm/Tasks";
 
 const SESSION_KEY = "kreative_session";
 
@@ -64,13 +69,19 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/dashboard"
+        path="/dashboard/*"
         element={
           <ProtectedRoute user={user}>
             <Dashboard user={user} onLogout={handleLogout} />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<Overview user={user} />} />
+        <Route path="leads" element={<Leads user={user} />} />
+        <Route path="contacts" element={<Contacts user={user} />} />
+        <Route path="pipeline" element={<Pipeline user={user} />} />
+        <Route path="tasks" element={<Tasks user={user} />} />
+      </Route>
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
     </Routes>
   );
